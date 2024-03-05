@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         EPKI Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  EPKI 한글/pdf 서식 자동입력
 // @author       You
 // @match        https://admin.epki.go.kr:8443/user_management/user_reg.do
@@ -38,17 +38,11 @@ function set(event) {
     try {
         if (tok.length < 8) throw false
         var name = tok[1 + tok.indexOf('성명')].trim()
-        //var ssn = tok[1 + tok.indexOf('주민등록번호')].split('-')
-        //var ssn1 = ssn[0]
-        //var ssn2 = ssn[1]
         var ssn = tok[1 + tok.indexOf('주민등록번호')].trim().replaceAll('-','')
         var ssn1 = ssn.substr(0,6)
         var ssn2 = ssn.substr(6,7)
         var mail = tok[1 + tok.indexOf('이메일')].trim()
-        //var cell = tok[1 + tok.indexOf('휴대전화번호')].split('-')
-        //var cel2 = cell[1]
-        //var cel3 = cell[2]
-        var cell = tok[1 + tok.indexOf('휴대전화번호')].trim().replaceAll('-','')
+        var cell = tok[1 + tok.indexOf('휴대전화번호')].trim().replaceAll('-','').replaceAll('.','')
         var cel2 = cell.substr(3,4)
         var cel3 = cell.substr(7,4)
         var pw = tok[1 + tok.indexOf('임시비밀번호')].trim().substr(0,8)
@@ -102,7 +96,6 @@ function set(event) {
     ta.style.backgroundColor = '#ffe'
     ta.setAttribute('readonly','readonly')
     ta.onpaste = set
-    //ta.onfocus = function(o) { o.target && o.target.select && o.target.select() }
     ta.value = ''
     ta.value += '1. 신청서에서 성명부터 임시비밀번호까지 선택해서 이 칸에 붙여넣기\n'
     ta.value += '  (\'성명\', \'임시비밀번호\' 등 제목 칸까지 모두 선택해야 함)\n\n'
