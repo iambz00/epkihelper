@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         EPKI Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.3.1
 // @description  EPKI 한글/pdf 서식 자동입력
 // @author       You
 // @match        https://admin.epki.go.kr:8443/user_management/user_reg.do
@@ -65,7 +65,6 @@ function set(event) {
 
 (function() {
     'use strict';
-
     //
     // [소속기관 검색] 아래 여백 축소
     //
@@ -83,6 +82,9 @@ function set(event) {
         // 원하는 높이를 입력 - 기본값 '115px'
         bookmark.style.height = '115px'
     }
+
+    // 특수목적용에서는 붙여넣기 영역 미동작
+    if(document.location.href.endsWith('userType=P')) return
 
     //
     // [상세정보입력] 아래 붙여넣기 영역 추가
