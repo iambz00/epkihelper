@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         EPKI Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.3.2
+// @version      1.3.3
 // @description  EPKI 한글/pdf 서식 자동입력
 // @author       You
 // @match        https://admin.epki.go.kr:8443/user_management/user_reg.do
@@ -23,7 +23,7 @@ var headers = [
 
 // obj 에 readonly 속성이나 클래스가 없을 때만 value 설정
 function setvalue(obj, value) {
-    if (!obj.getAttribute('readonly') && !obj.className.includes('readonly'))
+    if (obj && !obj.getAttribute('readonly') && !obj.className.includes('readonly'))
         obj.value = value
 }
 
@@ -61,6 +61,7 @@ function set(event) {
         setvalue(document.querySelector('input[name=cell3]'), cel3)
         setvalue(document.querySelector('input[name=assignEmail]'), mail)
         setvalue(document.querySelector('input[name=userPassword]'), pw)
+        setvalue(document.querySelector('input[name=textPassword]'), pw)
 
         document.querySelector('input[name=userName]').focus()
         //document.querySelector('input[name=userPassword]').focus()
