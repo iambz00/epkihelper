@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         EPKI Helper
-// @namespace    http://tampermonkey.net/
-// @version      1.3.3
+// @version      1.4.0
+// @namespace    https://github.com/iambz00/epkihelper/raw/master/EPKI%20Helper.user.js
 // @description  EPKI 한글/pdf 서식 자동입력
 // @author       You
+// @match        https://admin.epki.go.kr:8443/common/popup/search_department.do
 // @match        https://admin.epki.go.kr:8443/user_management/user_reg.do
 // @match        https://admin.epki.go.kr:8443/user_management/user_reg.do?userType=p
 // @match        https://admin.epki.go.kr:8443/user_management/user_detail.do
@@ -12,6 +13,7 @@
 // @grant        none
 // ==/UserScript==
 
+var EPKIHELPER_HEADER = '▒ ' + GM_info.script.name + ' ' + GM_info.script.version + ' ▒'
 var headers = [
     '성명',
     '주민등록번호',
@@ -23,8 +25,9 @@ var headers = [
 
 // obj 에 readonly 속성이나 클래스가 없을 때만 value 설정
 function setvalue(obj, value) {
-    if (obj && !obj.getAttribute('readonly') && !obj.className.includes('readonly'))
+    if (obj && !obj.getAttribute('readonly') && !obj.className.includes('readonly')) {
         obj.value = value
+    }
 }
 
 function set(event) {
@@ -77,8 +80,9 @@ function set(event) {
     // [소속기관 검색] 아래 여백 축소
     //
     var search = document.querySelector('ul.gap_54')
-    if(search)
+    if(search) {
         search.className = 'gap_20'
+    }
 
     //
     // [즐겨찾기] 없으면 제거 있으면 크기 변경
@@ -95,29 +99,56 @@ function set(event) {
         }
     }
 
-    // 특수목적용에서는 붙여넣기 영역 미동작
-    if(document.location.href.endsWith('userType=P')) return
-
-    //
-    // [상세정보입력] 아래 붙여넣기 영역 추가
-    //
-    var tr = document.createElement('tr')
-    var td = document.createElement('td')
-    var ta = document.createElement('textarea')
-    ta.id = 'auto'
-    ta.style.width = '95%'
-    ta.rows = 5
-    ta.style.backgroundColor = '#ffe'
-    ta.setAttribute('readonly','readonly')
-    ta.onpaste = set
-    ta.value = ''
-    ta.value += '1. 신청서에서 성명부터 임시비밀번호까지 선택해서 이 칸에 붙여넣기\n'
-    ta.value += '  (\'성명\', \'임시비밀번호\' 등 제목 칸까지 모두 선택해야 함)\n\n'
-    ta.value += '2. [등록] 클릭\n'
-    ta.value += '  (클릭 시 DN을생성하므로, DN이 나올 때까지 기다리지 않아도 됨)'
-    td.colSpan = 4
-    td.appendChild(ta)
-    tr.appendChild(td)
-    document.querySelector('table.result_style_1[summary="상세정보입력"] tbody').appendChild(tr)
-
+    // 등록/수정 개인용일 때에만 동작
+    if(document.location.href.match('user_management') && !document.location.href.endsWith('userType=P')) {
+        //
+        // [상세정보입력] 아래 붙여넣기 영역 추가
+        //
+        var tr = document.createElement('tr')
+        var td = document.createElement('td')
+        var ta = document.createElement('textarea')
+        ta.id = 'auto'
+        ta.style.width = '95%'
+        ta.rows = 5
+        ta.style.backgroundColor = '#ffe'
+        ta.setAttribute('readonly','readonly')
+        ta.onpaste = set
+        ta.value = EPKIHELPER_HEADER + '\n'
+        ta.value += '1. 신청서에서 성명부터 임시비밀번호까지 선택해서 이 칸에 붙여넣기\n'
+        ta.value += '  (\'성명\', \'임시비밀번호\' 등 제목 칸까지 모두 선택해야 함)\n'
+        ta.value += '2. [등록] 클릭\n'
+        ta.value += '  (DN 생성을 기다릴 필요 없음)'
+        td.colSpan = 4
+        td.appendChild(ta)
+        tr.appendChild(td)
+        document.querySelector('table.result_style_1[summary="상세정보입력"] tbody').appendChild(tr)
+    }
+    // 기관선택시
+    if(document.location.href.match('search_department.do')) {
+        document.querySelector('input[name=query]').onkeypress = function(e) {
+            //console.log(e)
+            var n = Number(e.key)
+            if (n && n > 0) {
+                n--
+                var nm = document.querySelector('#name'+n).click()
+                if (nm) {
+                    nm.click()
+                }
+            }
+        }
+        var ta2 = document.createElement('textarea')
+        ta2.id = 'auto'
+        ta2.style.width = '95%'
+        ta2.rows = 2
+        ta2.style.backgroundColor = '#ffe'
+        ta2.setAttribute('readonly','readonly')
+        ta2.value = EPKIHELPER_HEADER + '\n'
+        ta2.value += '검색결과에서 [순번]에 해당하는 숫자 키 입력 시 선택됩니다.'
+        ta2.style.margin = '2px 0 0 5px'
+        var ultitle = document.querySelector('ul.title')
+        if (ultitle) {
+            ultitle.append(ta2)
+            ultitle.style.marginBottom = '5px'
+        }
+    }
 })();
